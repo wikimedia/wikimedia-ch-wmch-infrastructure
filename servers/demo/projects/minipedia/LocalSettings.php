@@ -115,7 +115,24 @@ $wgDiff3 = "/usr/bin/diff3";
 
 # The following permissions were set based on your choice in the installer
 $wgGroupPermissions['*']['createaccount'] = false;
-$wgGroupPermissions['*']['edit'] = false;
+
+// this is just a demo, we do not have enough time to fight spam
+// anyway, let's block editing via an hook, instead of via privileges, or the UI changes
+// $wgGroupPermissions['*']['edit'] = true;
+
+// block editing via an hook if you are not registered-in
+$wgHooks['EditFilter'][] = function ( $editor, $text, $section, &$error, $summary ) {
+
+	// only logged-in users can write
+	global $wgUser;
+	if( ! ( StubObject::isRealObject( $wgUser ) &&  $wgUser->isLoggedIn() ) ) {
+		$error = sprintf(
+			'<div class="errorbox">%s</div>',
+			"Apologies, it's just a demo :) Please request an account."
+		);
+		return true;
+	}
+};
 
 ## Default skin: you can change the default skin. Use the internal symbolic
 ## names, ie 'vector', 'monobook':
