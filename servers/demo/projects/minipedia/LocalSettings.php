@@ -157,6 +157,9 @@ wfLoadExtension( 'WikiEditor' );
 wfLoadExtension( 'Math' );
 wfLoadExtension( 'Gadgets' );
 
+// See https://phabricator.wikimedia.org/T259332
+wfLoadExtension( 'TextExtracts' );
+
 # End of automatically generated settings.
 # Add more configuration options below.
 
