@@ -157,6 +157,10 @@ wfLoadExtension( 'WikiEditor' );
 wfLoadExtension( 'Math' );
 wfLoadExtension( 'Gadgets' );
 
+// See TODO TASK about import Template:Minipedia
+wfLoadExtension( 'ParserFunctions' );
+wfLoadExtension( 'TemplateStyles' );
+
 // See https://phabricator.wikimedia.org/T259332
 wfLoadExtension( 'TextExtracts' );
 
