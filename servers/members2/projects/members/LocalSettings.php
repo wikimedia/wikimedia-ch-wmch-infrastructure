@@ -184,6 +184,10 @@ wfLoadExtension( 'cldr' );
 wfLoadExtension( 'Echo' );
 wfLoadExtension( 'Thanks' );
 
+// legacy extension required to see some pages at ns 90
+// See https://phabricator.wikimedia.org/T269645
+wfLoadExtension( 'LiquidThreads' );
+
 // require some secret configurations:
 //  $wgDBpassword
 //  $wgSMTP
