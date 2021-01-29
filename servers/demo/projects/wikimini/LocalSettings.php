@@ -2,60 +2,122 @@
 /**
  * Wikimini MediaWiki LocalSettings switch.
  *
- * This wile was imported from wikimini.org.
+ * This file was imported and adapted from wikimini.org.
  *
  * See https://phabricator.wikimedia.org/T268292
  */
 
-// Include common settings to all wikis before this line (eg. database configuration)
+/**
+ * Debug or mainteinance stuff
+ */
+//if( $_SERVER['REMOTE_ADDR'] !== '1.2.3.4' && PHP_SAPI !== 'cli' ) {
+//	$wgShowExceptionDetails = true;
+//	$wgShowDBErrorBacktrace = true;
+//	$wgReadOnly = 'This wiki is currently under maintenance. Please check back in a couple of minutes.';
+//}
 
-//$wgShowExceptionDetails = true;
-//$wgShowDBErrorBacktrace = true;
 
-//$wgReadOnly = ( PHP_SAPI === 'cli' ) ? false : 'This wiki is currently under maintenance. Please check back in a couple of minutes.';
+/**
+ * Whitelist of accepted domains
+ */
+define( 'WIKIMINI_MAIN_DOMAINS_KNOWN', [
 
-// base directory containings local configurations
-$WIKIMINI_BASE_DIR = __DIR__ . '/WikiminiSettings/LocalSettings/';
+	// official frontend website in migration status
+	'wikimini.org',
 
-// serve the correct configuration checking the user's requested hostname
-switch( $_SERVER['SERVER_NAME'] ) {
+	// mirror website handled by Wikimedia CH
+	'wikimini.wikimedia.ch',
+] );
 
-	case 'stock.wikimini.org':
-		require_once $WIKIMINI_BASE_DIR . 'LocalSettingsStock.php';
-		break;
+/**
+ * Whitelist of accepted subdomains
+ *
+ * This is the list of all the wikis.
+ */
+define( 'WIKIMINI_PROJECTS_KNOWN', [
+	'ar',
+	'it',
+	'en',
+	'es',
+	'fr',
+	'lab',
+	'stock',
+	'sv',
+] );
 
-	case 'fr.wikimini.wikimedia.ch':
-	case 'fr.wikimini.org':
-		require_once $WIKIMINI_BASE_DIR . 'LocalSettingsFr.php';
-		break;
+/**
+ * define WIKIMINI_PROJECT_UID e.g. 'stock'
+ * define WIKIMINI_MAIN_DOMAIN e.g. 'wikimini.org'
+ */
+( function() {
 
-	case 'it.wikimini.org':
-		require_once $WIKIMINI_BASE_DIR . 'LocalSettingsIt.php';
-		break;
+	// host declared by the client
+	$host = $_SERVER['HTTP_HOST'] ?? null;
 
-	case 'sv.wikimini.org':
-		require_once $WIKIMINI_BASE_DIR . 'LocalSettingsSv.php';
-		break;
+	// split the host in subdomain and rest of the domain
+	$parts = explode( '.', $host, 2 );
 
-	case 'en.wikimini.org':
-		require_once $WIKIMINI_BASE_DIR . 'LocalSettingsEn.php';
-		break;
+	// avoid errors when in 'localhost' or wrong domains declared client-side
+	if( count( $parts ) === 2 ) {
 
-	case 'ar.wikimini.org':
-		require_once $WIKIMINI_BASE_DIR . 'LocalSettingsAr.php';
-		break;
+		// split the host in subdomain and rest of the domain
+		list( $uid, $main ) = $parts;
 
-	case 'es.wikimini.org':
-		require_once $WIKIMINI_BASE_DIR . 'LocalSettingsEs.php';
-		break;
+		// gotcha!
+		define( 'WIKIMINI_PROJECT_UID', $uid  );
+		define( 'WIKIMINI_MAIN_DOMAIN', $main );
 
-	case 'lab.wikimini.org':
-		require_once $WIKIMINI_BASE_DIR . 'LocalSettingsLab.php';
-		break;
+	}
+} )();
 
-	// no known no party
-	default:
-		http_response_code( 404 );
-		echo 'This wiki is not available. Check configuration.';
-		exit( 0 );
+/**
+ * No valid domain no party
+ */
+if( !defined( 'WIKIMINI_MAIN_DOMAIN' ) || !defined( 'WIKIMINI_PROJECT_UID' ) ) {
+	http_response_code( 400 );
+	die( 'Unexpected request' );
 }
+
+/**
+ * No known project no party
+ */
+if( !in_array( WIKIMINI_PROJECT_UID, WIKIMINI_PROJECTS_KNOWN, true ) ) {
+	http_response_code( 404 );
+	die( 'The requested wiki does not exist.' );
+}
+
+/**
+ * No known domain no party
+ */
+if( !in_array( WIKIMINI_MAIN_DOMAIN, WIKIMINI_MAIN_DOMAINS_KNOWN, true ) ) {
+	http_response_code( 400 );
+	die( 'The requested domain was not recognized.' );
+}
+
+/**
+ * Declare the URL of a generic Wikimini subdomain
+ */
+define( 'WIKIMINI_SUBDOMAIN_URL_GENERIC', 'https://%s.' . WIKIMINI_MAIN_DOMAIN );
+
+// require the LocalSettings-en.php
+// require the LocalSettings-es.php
+// require the LocalSettings-it.php
+// ecc.
+require __DIR__
+	. '/WikiminiSettings/LocalSettings/'
+	. sprintf( 'LocalSettings-%s.php', WIKIMINI_PROJECT_UID );
+
+/**
+ * Additional configurations
+ */
+
+// block editing in this demo
+$wgHooks['EditFilter'][] = function ( $editor, $text, $section, &$error, $summary ) {
+
+	$error = sprintf(
+		'<div class="errorbox">%s</div>',
+		"Apologies, it's just a demo! Please use https://wikimini.org/ instead."
+	);
+
+	return true;
+};
