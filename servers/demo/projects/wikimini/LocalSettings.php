@@ -2,7 +2,7 @@
 /**
  * Wikimini MediaWiki LocalSettings switch.
  *
- * This file was imported and adapted from wikimini.org.
+ * This file was imported and adapted from wikimini.org
  *
  * See https://phabricator.wikimedia.org/T268292
  */
@@ -10,10 +10,9 @@
 /**
  * Debug or mainteinance stuff
  */
-//if( $_SERVER['REMOTE_ADDR'] !== '1.2.3.4' && PHP_SAPI !== 'cli' ) {
+//if( $_SERVER['REMOTE_ADDR'] === '...' || PHP_SAPI === 'cli' ) {
 //	$wgShowExceptionDetails = true;
 //	$wgShowDBErrorBacktrace = true;
-//	$wgReadOnly = 'This wiki is currently under maintenance. Please check back in a couple of minutes.';
 //}
 
 
@@ -63,6 +62,25 @@ define( 'WIKIMINI_PROJECTS_KNOWN', [
 		// split the host in subdomain and rest of the domain
 		list( $uid, $main ) = $parts;
 
+		/**
+		 * No known domain no party
+		 */
+		if( !in_array( $main, WIKIMINI_MAIN_DOMAINS_KNOWN, true ) ) {
+			http_response_code( 400 );
+			die( 'The requested domain was not recognized.' );
+		}
+
+		/**
+		 * No known project no party
+		 */
+		if( !in_array( $uid, WIKIMINI_PROJECTS_KNOWN, true ) ) {
+			http_response_code( 404 );
+			die( 'The requested wiki does not exist.' );
+		}
+
+		// override main domain
+		$main = 'wikimini.org';
+
 		// gotcha!
 		define( 'WIKIMINI_PROJECT_UID', $uid  );
 		define( 'WIKIMINI_MAIN_DOMAIN', $main );
@@ -79,25 +97,55 @@ if( !defined( 'WIKIMINI_MAIN_DOMAIN' ) || !defined( 'WIKIMINI_PROJECT_UID' ) ) {
 }
 
 /**
- * No known project no party
- */
-if( !in_array( WIKIMINI_PROJECT_UID, WIKIMINI_PROJECTS_KNOWN, true ) ) {
-	http_response_code( 404 );
-	die( 'The requested wiki does not exist.' );
-}
-
-/**
- * No known domain no party
- */
-if( !in_array( WIKIMINI_MAIN_DOMAIN, WIKIMINI_MAIN_DOMAINS_KNOWN, true ) ) {
-	http_response_code( 400 );
-	die( 'The requested domain was not recognized.' );
-}
-
-/**
  * Declare the URL of a generic Wikimini subdomain
  */
 define( 'WIKIMINI_SUBDOMAIN_URL_GENERIC', 'https://%s.' . WIKIMINI_MAIN_DOMAIN );
+
+/**
+ * Define generic cache
+ *
+ * This may be a good candidate for a $wgCacheDirectory.
+ */
+define( 'WIKIMINI_CACHE_DIRECTORY', sprintf(
+	'/var/www/wikimini.org/cache/%s',
+	WIKIMINI_PROJECT_UID,
+) );
+
+/**
+ * URL of the current subdomain
+ *
+ * This may be a good candidate for a $wgServer.
+ */
+define( 'WIKIMINI_SUBDOMAIN_URL', sprintf(
+	WIKIMINI_SUBDOMAIN_URL_GENERIC,
+	WIKIMINI_PROJECT_UID,
+) );
+
+/**
+ * Wikimini Parsoid port
+ */
+define( 'WIKIMINI_PARSOID_PORT', 8000 );
+
+/**
+ * Propose an useful cache directory separated for each project
+ */
+$wgCacheDirectory = WIKIMINI_CACHE_DIRECTORY;
+
+/**
+ * Use OPCache as default
+ */
+$wgMainCacheType = CACHE_NONE;
+
+/**
+ * Fix login
+ */
+$wgSessionCacheType = CACHE_DB;
+
+/**
+ * Propose an useful default server<
+ *
+ */
+$wgServer = WIKIMINI_SUBDOMAIN_URL;
 
 // require the LocalSettings-en.php
 // require the LocalSettings-es.php
@@ -106,18 +154,3 @@ define( 'WIKIMINI_SUBDOMAIN_URL_GENERIC', 'https://%s.' . WIKIMINI_MAIN_DOMAIN )
 require __DIR__
 	. '/WikiminiSettings/LocalSettings/'
 	. sprintf( 'LocalSettings-%s.php', WIKIMINI_PROJECT_UID );
-
-/**
- * Additional configurations
- */
-
-// block editing in this demo
-$wgHooks['EditFilter'][] = function ( $editor, $text, $section, &$error, $summary ) {
-
-	$error = sprintf(
-		'<div class="errorbox">%s</div>',
-		"Apologies, it's just a demo! Please use https://wikimini.org/ instead."
-	);
-
-	return true;
-};
