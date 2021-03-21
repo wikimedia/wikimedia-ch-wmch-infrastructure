@@ -26,6 +26,9 @@ define( 'WIKIMINI_MAIN_DOMAINS_KNOWN', [
 
 	// mirror website handled by Wikimedia CH
 	'wikimini.wikimedia.ch',
+
+	// testing domain (not actually existing)
+	'test.wikimini.org',
 ] );
 
 /**
@@ -102,6 +105,21 @@ if( !defined( 'WIKIMINI_MAIN_DOMAIN' ) || !defined( 'WIKIMINI_PROJECT_UID' ) ) {
 define( 'WIKIMINI_SUBDOMAIN_URL_GENERIC', 'https://%s.' . WIKIMINI_MAIN_DOMAIN );
 
 /**
+ * Check if we are in the testing environment
+ *
+ * To trigger this mode, Apache passes an environment variable.
+ */
+define( 'WIKIMINI_TESTING', getenv( 'WikiminiEnv' ) === 'testing' );
+
+/**
+ * Base directory of Wikimini
+ */
+define( 'WIKIMINI_BASE', WIKIMINI_TESTING
+	? '/var/www/wikimini.org/www.testing'
+	: '/var/www/wikimini.org/www'
+);
+
+/**
  * Define generic cache
  *
  * This may be a good candidate for a $wgCacheDirectory.
@@ -142,10 +160,16 @@ $wgMainCacheType = CACHE_NONE;
 $wgSessionCacheType = CACHE_DB;
 
 /**
- * Propose an useful default server<
- *
+ * Propose an useful default server
  */
 $wgServer = WIKIMINI_SUBDOMAIN_URL;
+
+// database name
+if( WIKIMINI_TESTING ) {
+	$wgDBname = "wikimini_beta_" . WIKIMINI_PROJECT_UID . "wiki";
+} else{
+	$wgDBname = "wikimini_"      . WIKIMINI_PROJECT_UID . "wiki";
+}
 
 // require the LocalSettings-en.php
 // require the LocalSettings-es.php
