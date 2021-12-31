@@ -10,11 +10,17 @@
 /**
  * Debug or mainteinance stuff
  */
-//if( $_SERVER['REMOTE_ADDR'] === '...' || PHP_SAPI === 'cli' ) {
-//	$wgShowExceptionDetails = true;
-//	$wgShowDBErrorBacktrace = true;
-//}
+if( !defined( 'WIKIMINI_DEBUG' ) ) {
+	define( 'WIKIMINI_DEBUG', false );
+}
 
+/**
+ * Eventually show more info
+ */
+if( WIKIMINI_DEBUG ) {
+	$wgShowExceptionDetails = true;
+	$wgShowDBErrorBacktrace = true;
+}
 
 /**
  * Whitelist of accepted domains
@@ -80,9 +86,6 @@ define( 'WIKIMINI_PROJECTS_KNOWN', [
 			http_response_code( 404 );
 			die( 'The requested wiki does not exist.' );
 		}
-
-		// override main domain
-		$main = 'wikimini.org';
 
 		// gotcha!
 		define( 'WIKIMINI_PROJECT_UID', $uid  );
@@ -170,6 +173,11 @@ if( WIKIMINI_TESTING ) {
 } else{
 	$wgDBname = "wikimini_"      . WIKIMINI_PROJECT_UID . "wiki";
 }
+
+// load password and stuff
+// Note: here is the expected location:
+//   /etc/wmch-infrastructure/servers/demo/projects/wikimini/LocalSettings-secret.php
+require_once 'LocalSettings-secret.php';
 
 // require the LocalSettings-en.php
 // require the LocalSettings-es.php
