@@ -1,18 +1,7 @@
-# Wikimedia CH infrastructure
+# Wikimedia CH infrastructure repository
 
-This repository is shared alongside some Wikimedia CH servers.
+The Wikimedia CH infrastructure repository migrated from Wikimedia Gerrit to Wikimedia GitLab:
 
-The purpose is:
+https://gitlab.wikimedia.org/repos/wikimedia-ch/wmch-infrastructure
 
-* sharing resources
-* tracking changes
-* blame fresh regressions
-* etc.
-
-## Contact
-
-* https://phabricator.wikimedia.org/tag/wmch-infrastructure/
-
-## More info
-
-* https://members.wikimedia.ch/wiki/Infrastructure
+https://phabricator.wikimedia.org/T319534
